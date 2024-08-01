@@ -132,8 +132,8 @@
          (in-hole E (neg c_1))
          "negation")
 
-    (--> e_1
-         e_2
+    (--> (in-hole E e_1)
+         (in-hole E e_2)
          (judgment-holds (= e_1 e_2))
          "algebra")))
 
