@@ -3,16 +3,23 @@
 (require redex)
 
 (define-language cas
+  (func
+   ~ ; negation
+   + ; addition
+   - ; subtraction
+   *) ; multiplication
   (c
-   number)
+   number
+   func)
   (x variable-not-otherwise-mentioned)
   (e
    c
    x
-   (~ e) ; negation
-   (+ e e) ; addition
-   (- e e) ; subtraction
-   (* e e))) ; multiplication
+   (func e ...)) ; application
+  (E ; evaluation context
+   (c ... E e ...)
+   hole) 
+)
 
 (define-judgment-form cas
   #:contract (= e e)
@@ -107,25 +114,22 @@
   [(neg number)
    ,(apply - (term (number)))])
 
-; TODO: Do I *need* an eval context? (yes, you do to simplify inner expressions, dingus)
-; It's at times like this I probably need to get back to reading SEwPR.
 (define red
   (reduction-relation cas
-    #:domain e
-    (--> (+ c_1 c_2)
-         (add c_1 c_2)
+    (--> (in-hole E (+ c_1 c_2))
+         (in-hole E (add c_1 c_2))
          "addition")
 
-    (--> (- c_1 c_2)
-         (sub c_1 c_2)
+    (--> (in-hole E (- c_1 c_2))
+         (in-hole E (sub c_1 c_2))
          "subtraction")
 
-    (--> (* c_1 c_2)
-         (mul c_1 c_2)
+    (--> (in-hole E (* c_1 c_2))
+         (in-hole E (mul c_1 c_2))
          "multiplication")
 
-    (--> (~ c_1)
-         (neg c_1)
+    (--> (in-hole E (~ c_1))
+         (in-hole E (neg c_1))
          "negation")
 
     (--> e_1
